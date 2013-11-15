@@ -25,7 +25,11 @@ import plugins.FLIC.freenetMagic.FreenetMessageParser;
 import plugins.FLIC.freenetMagic.USK_IdentityFetcher;
 import plugins.FLIC.freenetMagic.USK_MessageFetcher;
 import plugins.FLIC.storage.RAMstore;
-
+/**
+ * Thread that does all the "work"
+ * @author SeekingFor
+ *
+ */
 public class Worker extends Thread implements ClientPutCallback  {
 	private RAMstore mStorage;
 	private FreenetMessageParser mFreenetMessageParser;
@@ -39,7 +43,11 @@ public class Worker extends Thread implements ClientPutCallback  {
 	private float processingTime = 0;
 	private volatile boolean isRunning;
 	private ConcurrentHashMap<String, InsertMessage> mCurrentlyInserting;
-	
+	/**
+	 * Stops all running Fetchers and messages
+	 * Called when plugin is unloaded
+	 * 
+	 */
 	public void terminate() {
 		mAsyncAnnounceFetcher.isRunning = false;
 		mIdentityFetcher_usk.removeAllFetchers();

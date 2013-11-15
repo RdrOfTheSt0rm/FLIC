@@ -195,8 +195,8 @@ public class FreenetFCPParser extends Thread {
 			}
 			configProps.put("identityCount", "" + i);
 			out = new FileOutputStream("FLIC/config", false);
-			configProps.store(out, "configuration created by FLIC " + mStorage.config.version_major + "." + mStorage.config.version_minor + "." + mStorage.config.version_release);
-			out.close();
+			//configProps.store(out, "configuration created by FLIC " + mStorage.config.version_major + "." + mStorage.config.version_minor + "." + mStorage.config.version_release);
+			//out.close();
 		} catch (FileNotFoundException e) {
 			System.err.println("[FLIC] can't create configuration file freenet_directory/FLIC/config. please check your file permissions. " + e.getMessage());
 		} catch (IOException e) {

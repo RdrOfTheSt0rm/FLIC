@@ -2,12 +2,17 @@ package plugins.FLIC.storage;
 
 import java.util.Date;
 import java.util.TimeZone;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.ConcurrentModificationException;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 
 import freenet.support.SimpleFieldSet;
@@ -70,19 +75,75 @@ public class RAMstore {
 	
 	public class Config {
 		// general
-		public Boolean firstStart = false;
+		//I dont think this is needed public Boolean firstStart = false;
 		public short concurrentAnnounceFetcher = 10;
 		public short maxMessageRetriesAfterDNF = 10;
 		public String messageBase = "flip";
 		public int version_major = 0;
 		public int version_minor = 0;
 		public int version_release = 1;
+		public String version =(" " +version_major + "." + version_minor + "."+ version_release);
 		public Boolean AllowFullAccessOnly = true;
+		Properties configProps =  new Properties();
 		public Config() {
 			// TODO: load config from file / db / whatever
 		}
+		/**
+		 * read config file from disk
+		 * @return
+		 */
+		public Properties getConfig(){
+			FileInputStream in;
+			try {
+				in = new FileInputStream("FLIC/config");
+				configProps.load(in);
+				in.close();
+			} catch (FileNotFoundException e) {
+				// configuration file does not yet exist or can't be opened for reading
+				System.err.println("[FLIC] can't load configuration file freenet_directory/FLIC/config. assuming first start. " + e.getMessage() + "\n");
+			} catch (IOException e) {
+				// file can't be read?
+				System.err.println(("can't read configuration file freenet_directory/FLIC/config. please check your file permissions. " + e.getMessage() + "\n"));
+			} catch (IllegalArgumentException e) {
+				// configuration file contains at least one invalid property
+				System.err.println("at least one configuration property found in your configuration file is invalid. please do not manually modify the configuration file. " + e.getMessage() + "\n");
+			}
+			return configProps;
+		}
+		/**
+		 * take properties from ram and write to disk
+		 * @param configProps
+		 */
+		public void setConfig(Properties configProps){
+			FileOutputStream out;
+			try {
+				out = new FileOutputStream("FLIC/config", false);
+				configProps.store(out, "comments?");
+				out.close();
+			} catch (FileNotFoundException e) {
+				// out stream can't create file
+				System.err.println("[FLIC] can't load configuration file freenet_directory/FLIC/config. assuming first start. " + e.getMessage() + "\n");
+				firstConfig();
+			} catch (IOException e) {
+				// configProps can't write to file
+				System.err.println("failed to create or modify configuration file. please check your file permissions for freenet_directory/FLIC/config. " + e.getMessage() + "\n");
+			} catch(ClassCastException e) {
+				// at least one property is invalid 
+				System.err.println("at least one of your configuration values is invalid. please correct it and save again. " + e.getMessage() + "\n");
+			}
+		}
+	/**
+	 * set config variables to deafault values
+	 * then write to disk
+	 */
+		public void firstConfig(){
+			String title = "configuration for FLIC ";
+			configProps.setProperty("Title" ,title);
+			configProps.setProperty("version", version);
+			configProps.setProperty("Concurrent announce fetcher", Short.toString(concurrentAnnounceFetcher));
+			setConfig(configProps);
+		}
 	}
-	
 	public class Channel implements Comparable<Channel>{
 		public String name;
 		public String topic;

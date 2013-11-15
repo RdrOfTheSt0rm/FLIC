@@ -264,42 +264,21 @@ public class WebInterface extends Toadlet {
 		}
 		
 		// save to configuration file
-		Properties configProps = new Properties();
-		FileInputStream in;
-		FileOutputStream out;
-		try {
-			in = new FileInputStream("FLIC/config");
-			configProps.load(in);
-			in.close();
-		} catch (FileNotFoundException e) {
-			// configuration file does not yet exist or can't be opened for reading
-		} catch (IOException e) {
-			// file can't be read?
-		} catch (IllegalArgumentException e) {
-			// configuration file contains at least one invalid property
-		}
+		Properties configProps =  new Properties();
+		
+		
+		
+		
 		configProps.setProperty("nick", input);
-		try {
-			out = new FileOutputStream("FLIC/config", false);
-			configProps.store(out, "configuration for FLIC " + mStorage.config.version_major + "." + mStorage.config.version_minor + "." + mStorage.config.version_release + " created at the configuration page.");
-			out.close();
-		} catch (FileNotFoundException e) {
-			// out stream can't create file
-			error = true;
-			errorMsg += "failed to create or modify configuration file. please check your file permissions for freenet_directory/FLIC/config. " + e.getMessage() + "\n";
-		} catch (IOException e) {
-			// configProps can't write to file
-			error = true;
-			errorMsg += "failed to create or modify configuration file. please check your file permissions for freenet_directory/FLIC/config. " + e.getMessage() + "\n";
-		} catch(ClassCastException e) {
-			// at least one property is invalid 
-			error = true;
-			errorMsg += "at least one of your configuration values is invalid. please correct it and save again. " + e.getMessage() + "\n";
-		}
+		
+		
+		mStorage.config.setConfig(configProps);
+		
+		
 		// done
 		HTMLNode messageDiv = new HTMLNode("div").addChild("b");
 		HTMLNode fontNode;
-		if(error) {
+		/**if(error) {
 			for(String curErrorMsg : errorMsg.split("\n")) {
 				fontNode = new HTMLNode("font", curErrorMsg);
 				fontNode.addAttribute("color", "red");
@@ -328,7 +307,7 @@ public class WebInterface extends Toadlet {
 			out.close();
 		} catch (Exception e) {
 			// ignore
-		}
+		}*/
 		return createConfig(mPageNode, messageDiv);
 	}
 	

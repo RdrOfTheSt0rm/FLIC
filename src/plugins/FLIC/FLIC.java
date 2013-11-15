@@ -1,6 +1,7 @@
 package plugins.FLIC;
 
 import java.io.File;
+
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -22,13 +23,24 @@ import freenet.clients.http.PageMaker;
 import freenet.clients.http.Toadlet;
 import freenet.clients.http.ToadletContainer;
 
+/**
+ * FLIC. FLIC provides an easy to use general library for interactive
+ *  communication over Freenet, extending the FLIP protocol by SomeDude.
+ *  
+ * @author SeekingFor
+ *
+ */
 public class FLIC implements FredPlugin, FredPluginThreadless, FredPluginL10n, FredPluginFCP {
 	private ToadletContainer mFredWebUI;
 	private PageMaker mPageMaker;
 	private Toadlet mToadlet;
 	private Worker mThreadWorker;
 	private RAMstore mStorage;
-
+	
+	/**
+	 * Start the plugin
+	 * @param pr
+	 */
 	public void runPlugin(PluginRespirator pr) {
 		
 		StringBuilder errorMessage = new StringBuilder();
@@ -69,6 +81,9 @@ public class FLIC implements FredPlugin, FredPluginThreadless, FredPluginL10n, F
 		}
 	}
 	
+	/**
+	 * Stop the plugin and remove from webinterface
+	 */
 	public void terminate() {
 		try {
 			mThreadWorker.terminate();
@@ -79,19 +94,30 @@ public class FLIC implements FredPlugin, FredPluginThreadless, FredPluginL10n, F
 		}
 	}
 
+	/**
+	 * Read FLIC configuration from FLIC/config
+	 * @param pr
+	 * @param errorMessage detailed message of what went wrong
+	 * @return returns if reading was successful, true or false
+	 */
 	private boolean readConfiguration(PluginRespirator pr, StringBuilder errorMessage) {
 		Properties configProps = new Properties();
 		FileInputStream in;
+		boolean isFirstStart = false;
 		boolean success = true;
+		mStorage.config.getConfig();
+		/**
 		try {
 			in = new FileInputStream("FLIC/config");
 			configProps.load(in);
 			in.close();
 			if(configProps.size() == 0) {
+				isFirstStart = true;
 				return true;
 			}
 		} catch (FileNotFoundException e) {
-			System.out.println("[FLIC] can't load configuration file freenet_directory/FLIC/config. assuming first start.");
+			System.err.println("[FLIC] can't load configuration file freenet_directory/FLIC/config. assuming first start.");
+			isFirstStart = true;
 		} catch (IOException e) {
 			success = false;
 			errorMessage.append("can't read configuration file freenet_directory/FLIC/config. please check your file permissions. " + e.getMessage() + "\n");
@@ -99,9 +125,10 @@ public class FLIC implements FredPlugin, FredPluginThreadless, FredPluginL10n, F
 			success = false;
 			errorMessage.append("at least one configuration property found in your configuration file is invalid. please do not manually modify the configuration file. " + e.getMessage() + "\n");
 		}
-		if(success) {
+		if(success && isFirstStart) {
 			mStorage.config.firstStart = Boolean.parseBoolean(configProps.getProperty("firstStart", "true"));
-		}
+		*}
+		*/
 		return success;
 	}
 	
