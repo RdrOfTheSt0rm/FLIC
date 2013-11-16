@@ -1,8 +1,8 @@
 package plugins.FLIC.freenetMagic;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
+//import java.io.FileInputStream;
+//import java.io.FileNotFoundException;
+//import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
@@ -179,76 +179,53 @@ public class FreenetFCPParser extends Thread {
 	}
 	
 	private void saveIdentityEditions() {
-		Properties configProps = new Properties();
-		FileOutputStream out;
-		try {
-			configProps.put("firstStart", mStorage.config.firstStart.toString());
-			int i = 0;
-			Iterator<String> iter = fcpIdents.keySet().iterator();
-			fcp_ident fcpIdent;
+		mStorage.config.setValue("firstStart", mStorage.config.firstStart.toString());
+		int i = 0;
+		Iterator<String> iter = fcpIdents.keySet().iterator();
+		fcp_ident fcpIdent;
 			while(iter.hasNext()) {
 				fcpIdent = fcpIdents.get(iter.next());
 				if(fcpIdent.announced) {
-					configProps.put("identity_" + i, fcpIdent.fn_key_public + "|" + mStorage.getCurrentDateString() + "|" + fcpIdent.lastIdentityInsertEdition + "|" + fcpIdent.lastMessageInsertEdition);
+					mStorage.config.setValue("identity_" + i, fcpIdent.fn_key_public + "|" + mStorage.getCurrentDateString() + "|" + fcpIdent.lastIdentityInsertEdition + "|" + fcpIdent.lastMessageInsertEdition);
 					i++;
 				}
 			}
-			configProps.put("identityCount", "" + i);
-			out = new FileOutputStream("FLIC/config", false);
-			//configProps.store(out, "configuration created by FLIC " + mStorage.config.version_major + "." + mStorage.config.version_minor + "." + mStorage.config.version_release);
-			//out.close();
-		} catch (FileNotFoundException e) {
-			System.err.println("[FLIC] can't create configuration file freenet_directory/FLIC/config. please check your file permissions. " + e.getMessage());
-		} catch (IOException e) {
-			System.err.println("[FLIC] can't write configuration to freenet_directory/FLIC/config. please check your file permissions. " + e.getMessage());
-		} catch(ClassCastException e) {
-			System.err.println("[FLIC] at least one configuration property is invalid. please do not manually modify the configuration file. " + e.getMessage());
-		}
+		mStorage.config.setValue("identityCount", "" + i);
+			
 	}
 	
 	private void loadStoredIdentityEditions() {
-		Properties configProps = new Properties();
-		FileInputStream in;
+		Properties configProps = mStorage.config.getConfig();
+		
+		int identityCount;
 		try {
-			in = new FileInputStream("FLIC/config");
-			configProps.load(in);
-			in.close();
-			int identityCount;
+			identityCount = Integer.parseInt(configProps.getProperty("identityCount", "0"));
+		} catch (NumberFormatException e) {
+			identityCount = 0;
+		}
+		int i;
+		fcp_ident fcpIdent;
+		for(i = 0; i < identityCount; i++) {
+			String identity = configProps.getProperty("identity_" + i, "");
+			// fn_key_public|yyyy-mm-dd|identityEdition|messageEdition
+			String[] identDetails = identity.split("\\|");
+			if(identDetails.length != 4) {
+				continue;
+			}
+			if(!identDetails[1].equals(mStorage.getCurrentDateString())) {
+				continue;
+			}
+			//insert identity with ghost = true so it will not be inserted or announced until the user registers
+			fcpIdent = new fcp_ident(null, identDetails[0], "", "", "", "", false, false, true, false);
+			fcpIdent.announced = true;
 			try {
-				identityCount = Integer.parseInt(configProps.getProperty("identityCount", "0"));
-			} catch (NumberFormatException e) {
-				identityCount = 0;
+				fcpIdent.lastIdentityInsertEdition = Long.parseLong(identDetails[2]);
+				fcpIdent.lastMessageInsertEdition = Long.parseLong(identDetails[3]);
+				fcpIdents.put(identDetails[0], fcpIdent);
+				mStorage.addNewUser(identDetails[0]);
+			} catch(NumberFormatException e) {
+				continue;
 			}
-			int i;
-			fcp_ident fcpIdent;
-			for(i = 0; i < identityCount; i++) {
-				String identity = configProps.getProperty("identity_" + i, "");
-				// fn_key_public|yyyy-mm-dd|identityEdition|messageEdition
-				String[] identDetails = identity.split("\\|");
-				if(identDetails.length != 4) {
-					continue;
-				}
-				if(!identDetails[1].equals(mStorage.getCurrentDateString())) {
-					continue;
-				}
-				//insert identity with ghost = true so it will not be inserted or announced until the user registers
-				fcpIdent = new fcp_ident(null, identDetails[0], "", "", "", "", false, false, true, false);
-				fcpIdent.announced = true;
-				try {
-					fcpIdent.lastIdentityInsertEdition = Long.parseLong(identDetails[2]);
-					fcpIdent.lastMessageInsertEdition = Long.parseLong(identDetails[3]);
-					fcpIdents.put(identDetails[0], fcpIdent);
-					mStorage.addNewUser(identDetails[0]);
-				} catch(NumberFormatException e) {
-					continue;
-				}
-			}
-		} catch (FileNotFoundException e) {
-			// file does not exist
-		} catch (IOException e) {
-			System.err.println("[FLIC] can't read configuration file freenet_directory/FLIC/config. please check your file permissions. " + e.getMessage());
-		} catch (IllegalArgumentException e) {
-			System.err.println("[FLIC] at least one configuration property found in your configuration file is invalid. please do not manually modify the configuration file. " + e.getMessage());
 		}
 		saveIdentityEditions();
 	}

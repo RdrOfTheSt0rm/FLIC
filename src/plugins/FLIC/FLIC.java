@@ -2,11 +2,11 @@ package plugins.FLIC;
 
 import java.io.File;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.util.Properties;
+//import java.io.FileInputStream;
+//import java.io.FileNotFoundException;
+//import java.io.FileOutputStream;
+//import java.io.IOException;
+//import java.util.Properties;
 
 import plugins.FLIC.freenetMagic.WebInterface;
 import plugins.FLIC.storage.RAMstore;
@@ -101,9 +101,9 @@ public class FLIC implements FredPlugin, FredPluginThreadless, FredPluginL10n, F
 	 * @return returns if reading was successful, true or false
 	 */
 	private boolean readConfiguration(PluginRespirator pr, StringBuilder errorMessage) {
-		Properties configProps = new Properties();
-		FileInputStream in;
-		boolean isFirstStart = false;
+		//Properties configProps = new Properties();
+		//FileInputStream in;
+		//boolean isFirstStart = false;
 		boolean success = true;
 		mStorage.config.getConfig();
 		/**

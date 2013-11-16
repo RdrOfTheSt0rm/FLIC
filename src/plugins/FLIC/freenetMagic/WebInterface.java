@@ -2,9 +2,9 @@ package plugins.FLIC.freenetMagic;
 
 import java.awt.image.RenderedImage;
 import java.io.ByteArrayOutputStream;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
+//import java.io.FileInputStream;
+//import java.io.FileNotFoundException;
+//import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.text.SimpleDateFormat;
@@ -75,8 +75,9 @@ public class WebInterface extends Toadlet {
 		handleWebRequest(uri, req, ctx);
 	}
 	private void handleWebRequest(URI uri, HTTPRequest req, ToadletContext ctx) throws ToadletContextClosedException, IOException, RedirectException {
+		//Properties configProps = mStorage.config.getConfig();
 		// We check the requested URI against a whitelist. Any request not found here will result in a info page.
-		if(mStorage.config.AllowFullAccessOnly && !ctx.isAllowedFullAccess()) {
+		if(mStorage.config.getValue("Access") && !ctx.isAllowedFullAccess()) {
 			// full access not allowed for the requesting ip
 			writeHTMLReply(ctx, 403, "", "Your host is not allowed to access this page.<br />Try adding it to 'Hosts having a full access to the Freenet web interface (read warning)' in your <a href='../config/fproxy'>fproxy configuration</a>.");
 		}
@@ -85,7 +86,7 @@ public class WebInterface extends Toadlet {
 		if(requestedPath.equals("")) {
 			writeHTMLReply(ctx, 200, "OK", createRoot(req, ctx).outer.generate());
 		} else if(requestedPath.equals("options")) {
-			if(mStorage.config.firstStart) {
+			if(mStorage.config.getValue("firstStart")) {
 				mPageNode = ctx.getPageMaker().getPageNode("Hello stranger. Welcome to FLIC", true, ctx);
 				mPageNode = createConfig(mPageNode, parseWelcomeMessage(mStorage.welcomeText));
 			} else {

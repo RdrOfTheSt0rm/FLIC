@@ -75,16 +75,16 @@ public class RAMstore {
 	
 	public class Config {
 		// general
-		//I dont think this is needed public Boolean firstStart = false;
+		public Boolean firstStart = false;
 		public short concurrentAnnounceFetcher = 10;
 		public short maxMessageRetriesAfterDNF = 10;
 		public String messageBase = "flip";
 		public int version_major = 0;
 		public int version_minor = 0;
 		public int version_release = 1;
-		public String version =(" " +version_major + "." + version_minor + "."+ version_release);
+		public String version =(version_major + "." + version_minor + "."+ version_release);
 		public Boolean AllowFullAccessOnly = true;
-		Properties configProps =  new Properties();
+		public Properties configProps =  new Properties();
 		public Config() {
 			// TODO: load config from file / db / whatever
 		}
@@ -101,6 +101,7 @@ public class RAMstore {
 			} catch (FileNotFoundException e) {
 				// configuration file does not yet exist or can't be opened for reading
 				System.err.println("[FLIC] can't load configuration file freenet_directory/FLIC/config. assuming first start. " + e.getMessage() + "\n");
+				firstConfig();
 			} catch (IOException e) {
 				// file can't be read?
 				System.err.println(("can't read configuration file freenet_directory/FLIC/config. please check your file permissions. " + e.getMessage() + "\n"));
@@ -132,15 +133,42 @@ public class RAMstore {
 				System.err.println("at least one of your configuration values is invalid. please correct it and save again. " + e.getMessage() + "\n");
 			}
 		}
-	/**
-	 * set config variables to deafault values
-	 * then write to disk
-	 */
+		/**
+		 * set value allows changing individual
+		 * values in config
+		 */
+		public void setValue(String title, String value){
+			configProps.put(title, value);
+		}
+		/**
+		 * retrieve values from config
+		 */
+		public boolean getValue(String title){
+			boolean bValue = false;
+			String sValue = (configProps.getProperty(title));
+			if (sValue == "true"){
+				bValue = true;
+			}
+			else if (sValue == "false"){
+				bValue = false;
+			}
+			else{
+				//something went wrong
+			}
+			return bValue;
+			
+		}
+		/**
+		 * set config variables to deafault values
+		 * then write to disk
+		 */
 		public void firstConfig(){
+			firstStart = true;
 			String title = "configuration for FLIC ";
 			configProps.setProperty("Title" ,title);
-			configProps.setProperty("version", version);
-			configProps.setProperty("Concurrent announce fetcher", Short.toString(concurrentAnnounceFetcher));
+			configProps.setProperty("Version", version);
+			configProps.setProperty("Concurrent_announce_fetcher", Short.toString(concurrentAnnounceFetcher));
+			configProps.setProperty("Access", Boolean.toString(AllowFullAccessOnly));
 			setConfig(configProps);
 		}
 	}
